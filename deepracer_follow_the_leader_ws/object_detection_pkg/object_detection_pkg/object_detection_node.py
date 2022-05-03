@@ -234,6 +234,48 @@ class ObjectDetectionNode(Node):
 
         try:
             while not self.stop_thread:
+                sensor_data = self.input_buffer.get()
+                start_time = time.time()
+                image = self.preprocess(sensor_data)
+                circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 1.3, 100)
+                if circles is not None:
+                    # Get the (x, y, r) as integers
+                    circles = np.round(circles[0, :]).astype("int")
+                    print(circles)
+                    # loop over the circles
+                    for (x, y, r) in circles:
+                        if self.publish_display_output:
+                            display_image = image.transpose((1, 2, 0))
+                            cv2.circle(display_image, (x, y), r, (0, 255, 0), 2)
+                            display_image = self.bridge.cv2_to_imgmsg(np.array(display_image), "bgr8")
+                            self.display_image_publisher.publish(display_image)
+                    if len(circles) == 1:
+                    # Assume being at target position.
+                        detection_delta = self.calculate_delta(self.target_x,
+                                                            self.target_y,
+                                                            circles[0][0],
+                                                            circles[0][1])
+                        self.delta_publisher.publish(detection_delta)
+                else:
+                    # Assume being at target position.
+                    detection_delta = self.calculate_delta(self.target_x,
+                                                           self.target_y,
+                                                           self.target_x,
+                                                           self.target_y)
+                    self.delta_publisher.publish(detection_delta)
+                self.get_logger().info(f"Total execution time = {time.time() - start_time}")
+        except Exception as ex:
+            self.get_logger().error(f"Failed inference step: {ex}")
+            # Destroy the ROS Node running in another thread as well.
+            self.destroy_node()
+            rclpy.shutdown()
+
+    def _run_inference(self):
+        """Method for running inference on received input image.
+        """
+
+        try:
+            while not self.stop_thread:
                 # Get an input image from double buffer.
                 sensor_data = self.input_buffer.get()
                 start_time = time.time()
