@@ -230,9 +230,7 @@ class ObjectDetectionNode(Node):
 
     def circle(self, frame):
         start_time = time.time()
-        s = frame.shape
-        smaller = cv2.resize(frame, (int(s[0]*0.5), int(s[1]*0.5)))
-        cimage = cv2.cvtColor(smaller, cv2.COLOR_BGR2GRAY)
+        cimage = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         self.get_logger().info(f"convert to grey time = {time.time() - start_time}")
         start_time = time.time()
         circles = cv2.HoughCircles(cimage, cv2.HOUGH_GRADIENT, 1.3, 100)
@@ -244,7 +242,7 @@ class ObjectDetectionNode(Node):
                 x = circle[0,0]
                 y = circle[0,1]
                 r = circle[0,2]
-                cv2.circle(frame, (int(x)*2, int(y))*2, int(r)*2, (0, 255, 0), -1)
+                cv2.circle(frame, (int(x), int(y)), int(r), (0, 255, 0), -1)
                 self.get_logger().info(f"draw circles = {time.time() - start_time}")
             if len(circles) == 1:
                 return (circle[0,0], circle[0,1], circle[0,2]), frame
