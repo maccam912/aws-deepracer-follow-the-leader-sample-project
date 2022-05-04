@@ -234,7 +234,7 @@ class ObjectDetectionNode(Node):
         cimage = cv2.blur(cimage, (10, 10))
         self.get_logger().info(f"convert to grey time = {time.time() - start_time}")
         start_time = time.time()
-        circles = cv2.HoughCircles(cimage, cv2.HOUGH_GRADIENT, 1.3, 100)
+        circles = cv2.HoughCircles(cimage, cv2.HOUGH_GRADIENT, 1, 100)
         self.get_logger().info(f"find circles = {time.time() - start_time}")
         start_time = time.time()
         #print(circles)
