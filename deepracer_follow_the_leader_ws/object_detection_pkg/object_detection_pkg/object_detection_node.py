@@ -231,22 +231,30 @@ class ObjectDetectionNode(Node):
     def circle(self, frame):
         start_time = time.time()
         cimage = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        self.get_logger().info(f"convert to grey time = {time.time() - start_time}")
-        start_time = time.time()
-        circles = cv2.HoughCircles(cimage, cv2.HOUGH_GRADIENT, 1, 10)
-        self.get_logger().info(f"find circles = {time.time() - start_time}")
-        start_time = time.time()
-        #print(circles)
-        if circles is not None:
-            for circle in circles:
-                x = circle[0,0]
-                y = circle[0,1]
-                r = circle[0,2]
-                cv2.circle(frame, (int(x), int(y)), int(r), (0, 255, 0), -1)
-                self.get_logger().info(f"draw circles = {time.time() - start_time}")
-            if len(circles) == 1:
-                return (circle[0,0], circle[0,1], circle[0,2]), frame
-        self.get_logger().info(f"draw circles = {time.time() - start_time}")
+        thresh_img = cv2.threshold(cimage, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+        cnts = cv2.findContours(thresh_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+        for cnt in cnts:
+            approx = cv2.contourArea(cnt)
+            print(approx)
+
+
+        # self.get_logger().info(f"convert to grey time = {time.time() - start_time}")
+        # start_time = time.time()
+        # circles = cv2.HoughCircles(cimage, cv2.HOUGH_GRADIENT, 1, 10)
+        # self.get_logger().info(f"find circles = {time.time() - start_time}")
+        # start_time = time.time()
+        # #print(circles)
+        # if circles is not None:
+        #     for circle in circles:
+        #         x = circle[0,0]
+        #         y = circle[0,1]
+        #         r = circle[0,2]
+        #         cv2.circle(frame, (int(x), int(y)), int(r), (0, 255, 0), -1)
+        #         self.get_logger().info(f"draw circles = {time.time() - start_time}")
+        #     if len(circles) == 1:
+        #         return (circle[0,0], circle[0,1], circle[0,2]), frame
+        # self.get_logger().info(f"draw circles = {time.time() - start_time}")
         return None, frame
 
     def run_inference(self):
