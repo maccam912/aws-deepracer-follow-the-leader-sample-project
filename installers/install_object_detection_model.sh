@@ -4,7 +4,7 @@ echo "| Downloading the ssd_mobilenet_v2_coco model  |"
 echo " =============================================="
 mkdir -p /opt/models
 #python3 /opt/intel/openvino_2021/deployment_tools/tools/model_downloader/downloader.py --name ssd_mobilenet_v2_coco -o /opt/models
-python3 /opt/intel/openvino_2021/deployment_tools/tools/model_downloader/downloader.py --name mtcnn-r -o /opt/models
+python3 /opt/intel/openvino_2021/deployment_tools/tools/model_downloader/downloader.py --name vehicle-license-plate-detection-barrier-0123 -o /opt/models
 echo ""
 echo " ============================================="
 echo "| Optimizing the ssd_mobilenet_v2_coco model  |"
