@@ -230,7 +230,8 @@ class ObjectDetectionNode(Node):
 
     def circle(self, frame):
         start_time = time.time()
-        smaller = cv2.resize(frame, fx=0.1, fy=0.1)
+        s = frame.shape
+        smaller = cv2.resize(frame, (int(s[0]*0.1), int(s[1]*0.1)))
         cimage = cv2.cvtColor(smaller, cv2.COLOR_BGR2GRAY)
         self.get_logger().info(f"convert to grey time = {time.time() - start_time}")
         start_time = time.time()
