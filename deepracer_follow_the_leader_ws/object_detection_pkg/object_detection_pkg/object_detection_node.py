@@ -255,7 +255,7 @@ class ObjectDetectionNode(Node):
         #     if len(circles) == 1:
         #         return (circle[0,0], circle[0,1], circle[0,2]), frame
         # self.get_logger().info(f"draw circles = {time.time() - start_time}")
-        return None, frame
+        return None, thresh_img
 
     def run_inference(self):
         """Method for running inference on received input image.
