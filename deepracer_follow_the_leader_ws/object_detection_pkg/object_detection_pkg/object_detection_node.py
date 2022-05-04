@@ -250,7 +250,7 @@ class ObjectDetectionNode(Node):
         self.get_logger().info(f"draw circles = {time.time() - start_time}")
         return None, frame
 
-    def _run_inference(self):
+    def run_inference(self):
         """Method for running inference on received input image.
         """
 
@@ -286,7 +286,7 @@ class ObjectDetectionNode(Node):
             self.destroy_node()
             rclpy.shutdown()
 
-    def run_inference(self):
+    def _run_inference(self):
         """Method for running inference on received input image.
         """
 
