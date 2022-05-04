@@ -254,6 +254,7 @@ class ObjectDetectionNode(Node):
                 image = self.preprocess(sensor_data)
                 image = image.transpose((1, 2, 0)) # Get channels last
                 circ, im = self.circle(image)
+                self.get_logger().info(f"Total circle time = {time.time() - start_time}")
                 self.get_logger().info(f"circ = {circ}")
                 display_image = self.bridge.cv2_to_imgmsg(np.array(im), "bgr8")
                 self.display_image_publisher.publish(display_image)
