@@ -228,6 +228,21 @@ class ObjectDetectionNode(Node):
         self.get_logger().debug(f"Delta from target position: {delta_x} {delta_y}")
         return delta
 
+    def circle(self, frame):
+        cimage = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        circles = cv2.HoughCircles(cimage, cv2.HOUGH_GRADIENT, 1.3, 100)
+        print(circles)
+        if circles is not None:
+            for circle in circles:
+                x = circle[0,0]
+                y = circle[0,1]
+                r = circle[0,2]
+                cv2.circle(frame, (int(x), int(y)), int(r), (0, 255, 0), -1)
+            if len(circles) == 1:
+                return (circle[0,0], circle[0,1], circle[0,2]), frame
+            else:
+                return None, frame
+
     def run_inference(self):
         """Method for running inference on received input image.
         """
@@ -237,25 +252,16 @@ class ObjectDetectionNode(Node):
                 sensor_data = self.input_buffer.get()
                 start_time = time.time()
                 image = self.preprocess(sensor_data)
-                circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 1.3, 100)
-                if circles is not None:
-                    # Get the (x, y, r) as integers
-                    circles = np.round(circles[0, :]).astype("int")
-                    print(circles)
-                    # loop over the circles
-                    for (x, y, r) in circles:
-                        if self.publish_display_output:
-                            display_image = image.transpose((1, 2, 0))
-                            cv2.circle(display_image, (x, y), r, (0, 255, 0), 2)
-                            display_image = self.bridge.cv2_to_imgmsg(np.array(display_image), "bgr8")
-                            self.display_image_publisher.publish(display_image)
-                    if len(circles) == 1:
-                    # Assume being at target position.
-                        detection_delta = self.calculate_delta(self.target_x,
+                circ, im = self.circle(image)
+                display_image = self.bridge.cv2_to_imgmsg(np.array(im), "bgr8")
+                self.display_image_publisher.publish(display_image)
+
+                if circ is not None:
+                    detection_delta = self.calculate_delta(self.target_x,
                                                             self.target_y,
-                                                            circles[0][0],
-                                                            circles[0][1])
-                        self.delta_publisher.publish(detection_delta)
+                                                            circ[0],
+                                                            circ[1])
+                    self.delta_publisher.publish(detection_delta)
                 else:
                     # Assume being at target position.
                     detection_delta = self.calculate_delta(self.target_x,
