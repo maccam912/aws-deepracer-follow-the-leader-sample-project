@@ -47,8 +47,7 @@ from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 
 from deepracer_interfaces_pkg.msg import (EvoSensorMsg,
-                                          DetectionDeltaMsg,
-                                          BallLocMsg)
+                                          DetectionDeltaMsg)
 from openvino.inference_engine import IECore
 import ngraph as ng
 from object_detection_pkg import (constants,
@@ -208,10 +207,10 @@ class ObjectDetectionNode(Node):
         bb_center_y = top_left_y + ((bottom_right_y - top_left_y) / 2.0)
         return bb_center_x, bb_center_y
 
-    def calculate_ball_loc(self, ball_x, ball_radius) -> BallLocMsg:
+    def calculate_ball_loc(self, ball_x, ball_radius):
         lr = ball_x/self.w
         radius = ball_radius
-        balllocmsg = BallLocMsg()
+        balllocmsg = DetectionDeltaMsg()
         balllocmsg.delta = [lr, radius]
         return balllocmsg
 

@@ -42,7 +42,6 @@ from rclpy.qos import (QoSProfile,
                        QoSReliabilityPolicy)
 
 from deepracer_interfaces_pkg.msg import (DetectionDeltaMsg,
-                                          BallLocMsg,
                                           ServoCtrlMsg)
 from deepracer_interfaces_pkg.srv import SetMaxSpeedSrv
 from ftl_navigation_pkg import (constants,
@@ -65,7 +64,7 @@ class FTLNavigationNode(Node):
 
         # Create subscription to detection deltas from object_detection_node.
         self.detection_delta_subscriber = \
-            self.create_subscription(BallLocMsg,
+            self.create_subscription(DetectionDeltaMsg,
                                      constants.OBJECT_DETECTION_DELTA_TOPIC,
                                      self.detection_delta_cb,
                                      qos_profile)
