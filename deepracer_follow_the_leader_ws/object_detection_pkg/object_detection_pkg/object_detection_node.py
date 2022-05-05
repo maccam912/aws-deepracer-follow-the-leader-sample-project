@@ -36,6 +36,7 @@ import signal
 import threading
 import cv2
 import numpy as np
+import imutils
 import rclpy
 from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
@@ -229,33 +230,33 @@ class ObjectDetectionNode(Node):
         return delta
 
     def circle(self, frame):
-        start_time = time.time()
-        cimage = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        thresh_img = cv2.threshold(cimage, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-        cnts = cv2.findContours(thresh_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cnts = cnts[0] if len(cnts) == 2 else cnts[1]
-        for cnt in cnts:
-            approx = cv2.contourArea(cnt)
-            print(approx)
+        colorLower = (90,100,0)
+        colorHigher = (140,255,255)
+        blurred = cv2.GaussianBlur(frame, (11, 11), 0)
+        hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+        mask = cv2.inRange(hsv, colorLower, colorHigher)
+        mask = cv2.erode(mask, None, iterations=2)
+        mask = cv2.dilate(mask, None, iterations=2)
+        cv2.imshow('mask', mask)
+        cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cnts = imutils.grab_contours(cnts)
+        center = None
 
+        if len(cnts) > 0:
+            c = max(cnts, key=cv2.contourArea)
+            ((x, y), radius) = cv2.minEnclosingCircle(c)
+            M = cv2.moments(c)
+            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
-        # self.get_logger().info(f"convert to grey time = {time.time() - start_time}")
-        # start_time = time.time()
-        # circles = cv2.HoughCircles(cimage, cv2.HOUGH_GRADIENT, 1, 10)
-        # self.get_logger().info(f"find circles = {time.time() - start_time}")
-        # start_time = time.time()
-        # #print(circles)
-        # if circles is not None:
-        #     for circle in circles:
-        #         x = circle[0,0]
-        #         y = circle[0,1]
-        #         r = circle[0,2]
-        #         cv2.circle(frame, (int(x), int(y)), int(r), (0, 255, 0), -1)
-        #         self.get_logger().info(f"draw circles = {time.time() - start_time}")
-        #     if len(circles) == 1:
-        #         return (circle[0,0], circle[0,1], circle[0,2]), frame
-        # self.get_logger().info(f"draw circles = {time.time() - start_time}")
-        return None, thresh_img
+            if radius > 10:
+                cv2.circle(frame, (int(x), int(y)), int(radius), (0, 255, 255), 2)
+                cv2.circle(frame, (int(x), int(y)), 50, (0, 255, 255), 2)
+                cv2.circle(frame, center, 5, (0, 0, 255), -1)
+                if radius > 50:
+                    return True, x, y, frame
+                else:
+                    return False, x, y, frame
+        return None, None, None, frame
 
     def run_inference(self):
         """Method for running inference on received input image.
@@ -267,17 +268,17 @@ class ObjectDetectionNode(Node):
                 start_time = time.time()
                 image = self.preprocess(sensor_data)
                 image = image.transpose((1, 2, 0)) # Get channels last
-                circ, im = self.circle(image)
+                rad, x, y, im = self.circle(image)
                 self.get_logger().info(f"Total circle time = {time.time() - start_time}")
                 self.get_logger().info(f"circ = {circ}")
                 display_image = self.bridge.cv2_to_imgmsg(np.array(im), "bgr8")
                 self.display_image_publisher.publish(display_image)
 
-                if circ is not None:
+                if rad is not None:
                     detection_delta = self.calculate_delta(self.target_x,
                                                             self.target_y,
-                                                            circ[0],
-                                                            circ[1])
+                                                            x,
+                                                            y)
                     self.delta_publisher.publish(detection_delta)
                 else:
                     # Assume being at target position.
