@@ -43,6 +43,7 @@ set(msg_files
   "msg/SoftwareUpdatePctMsg.msg"
   "msg/USBFileSystemNotificationMsg.msg"
   "msg/DetectionDeltaMsg.msg"
+  "msg/BallLocMsg.msg"
 )
 set(srv_files
   "srv/ActiveStateSrv.srv"
