@@ -2,5 +2,4 @@
 # detected object from the target (reference) position
 # with respect to x and y axes.
 
-float32 lr # left to right. 0 = left, 0.5 = middle, 1 = right
-float32 radius # size of ball.
+float32[] delta # left to right. 0 = left, 0.5 = middle, 1 = right # size of ball.

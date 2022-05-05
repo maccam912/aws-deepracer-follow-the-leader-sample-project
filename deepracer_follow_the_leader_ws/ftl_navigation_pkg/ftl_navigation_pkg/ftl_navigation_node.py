@@ -147,7 +147,7 @@ class FTLNavigationNode(Node):
 
         self.delta_buffer.put(detection_delta)
 
-    def plan_action(self, lr, radius):
+    def plan_action(self, delta):
         """Helper method to calculate action to be undertaken from the detection delta
            received from object_detection_node.
 
@@ -157,8 +157,8 @@ class FTLNavigationNode(Node):
         Returns:
         (int): Action Space Category defined in constants.py
         """
-        delta_x = lr
-        delta_y = radius
+        delta_x = delta[0]
+        delta_y = delta[1]
 
         if delta_y < 50:
             # too close
