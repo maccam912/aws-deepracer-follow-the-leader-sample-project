@@ -283,11 +283,11 @@ class ObjectDetectionNode(Node):
                 self.display_image_publisher.publish(display_image)
 
                 if rad is not None:
-                    balllocmsg = self.calculate_ball_loc(x, rad)
+                    balllocmsg = self.calculate_ball_loc(x*1.0, 1.0*rad)
                     self.delta_publisher.publish(balllocmsg)
                 else:
                     # Assume being at target position.
-                    balllocmsg = self.calculate_ball_loc(self.w/2, rad)
+                    balllocmsg = self.calculate_ball_loc(self.w/2.0, 1.0*rad)
                     self.delta_publisher.publish(balllocmsg)
                 self.get_logger().info(f"Total execution time = {time.time() - start_time}")
         except Exception as ex:
