@@ -212,9 +212,7 @@ class ObjectDetectionNode(Node):
         lr = ball_x/self.w
         radius = ball_radius
         balllocmsg = BallLocMsg()
-        balllocmsg.lr = lr
-        balllocmsg.radius = radius
-        self.get_logger().debug(f"BallLocMsg: {lr} {radius}")
+        balllocmsg.delta = [lr, radius]
         return balllocmsg
 
     def calculate_delta(self, target_x, target_y, bb_center_x, bb_center_y):
