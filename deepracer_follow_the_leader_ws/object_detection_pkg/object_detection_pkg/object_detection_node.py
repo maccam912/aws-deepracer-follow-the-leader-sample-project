@@ -284,10 +284,12 @@ class ObjectDetectionNode(Node):
 
                 if rad is not None:
                     balllocmsg = self.calculate_ball_loc(x*1.0, 1.0*rad)
+                    self.get_logger().error(f"Failed inference step: {balllocmsg}")
                     self.delta_publisher.publish(balllocmsg)
                 else:
                     # Assume being at target position.
                     balllocmsg = self.calculate_ball_loc(self.w/2.0, 1.0*rad)
+                    self.get_logger().error(f"Failed inference step: {balllocmsg}")
                     self.delta_publisher.publish(balllocmsg)
                 self.get_logger().info(f"Total execution time = {time.time() - start_time}")
         except Exception as ex:
