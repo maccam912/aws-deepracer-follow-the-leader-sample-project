@@ -42,6 +42,7 @@ from rclpy.qos import (QoSProfile,
                        QoSReliabilityPolicy)
 
 from deepracer_interfaces_pkg.msg import (DetectionDeltaMsg,
+                                          BallLocMsg,
                                           ServoCtrlMsg)
 from deepracer_interfaces_pkg.srv import SetMaxSpeedSrv
 from ftl_navigation_pkg import (constants,
@@ -64,7 +65,7 @@ class FTLNavigationNode(Node):
 
         # Create subscription to detection deltas from object_detection_node.
         self.detection_delta_subscriber = \
-            self.create_subscription(DetectionDeltaMsg,
+            self.create_subscription(BallLocMsg,
                                      constants.OBJECT_DETECTION_DELTA_TOPIC,
                                      self.detection_delta_cb,
                                      qos_profile)
@@ -146,7 +147,7 @@ class FTLNavigationNode(Node):
 
         self.delta_buffer.put(detection_delta)
 
-    def plan_action(self, delta):
+    def plan_action(self, lr, radius):
         """Helper method to calculate action to be undertaken from the detection delta
            received from object_detection_node.
 
@@ -156,8 +157,18 @@ class FTLNavigationNode(Node):
         Returns:
         (int): Action Space Category defined in constants.py
         """
-        delta_x = delta[0]
-        delta_y = delta[1]
+        delta_x = lr
+        delta_y = radius
+
+        if delta_y < 50:
+            # too close
+            return constants.ACTION_SPACE[7][constants.ActionSpaceKeys.CATEGORY]
+        else:
+            # farther away, move forward
+            if delta_x < 0.5:
+                return constants.ACTION_SPACE[5][constants.ActionSpaceKeys.CATEGORY]
+            else:
+                return constants.ACTION_SPACE[3][constants.ActionSpaceKeys.CATEGORY]
 
         if delta_y > constants.DeltaValueMap.REVERSE_DELTA_Y:
             # Reverse Bracket

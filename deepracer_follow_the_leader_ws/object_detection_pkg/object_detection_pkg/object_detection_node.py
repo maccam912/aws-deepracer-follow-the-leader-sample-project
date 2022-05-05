@@ -47,7 +47,8 @@ from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 
 from deepracer_interfaces_pkg.msg import (EvoSensorMsg,
-                                          DetectionDeltaMsg)
+                                          DetectionDeltaMsg,
+                                          BallLocMsg)
 from openvino.inference_engine import IECore
 import ngraph as ng
 from object_detection_pkg import (constants,
@@ -207,6 +208,15 @@ class ObjectDetectionNode(Node):
         bb_center_y = top_left_y + ((bottom_right_y - top_left_y) / 2.0)
         return bb_center_x, bb_center_y
 
+    def calculate_ball_loc(self, ball_x, ball_radius) -> BallLocMsg:
+        lr = ball_x/self.w
+        radius = ball_radius
+        balllocmsg = BallLocMsg()
+        balllocmsg.lr = lr
+        balllocmsg.radius = radius
+        self.get_logger().debug(f"BallLocMsg: {lr} {radius}")
+        return balllocmsg
+
     def calculate_delta(self, target_x, target_y, bb_center_x, bb_center_y):
         """Method that calculates the normalized error (delta) of the
            detected object from the target (reference) position
@@ -273,18 +283,12 @@ class ObjectDetectionNode(Node):
                 self.display_image_publisher.publish(display_image)
 
                 if rad is not None:
-                    detection_delta = self.calculate_delta(self.target_x,
-                                                            self.target_y,
-                                                            x,
-                                                            y)
-                    self.delta_publisher.publish(detection_delta)
+                    balllocmsg = self.calculate_ball_loc(x, rad)
+                    self.delta_publisher.publish(balllocmsg)
                 else:
                     # Assume being at target position.
-                    detection_delta = self.calculate_delta(self.target_x,
-                                                           self.target_y,
-                                                           self.target_x,
-                                                           self.target_y)
-                    self.delta_publisher.publish(detection_delta)
+                    balllocmsg = self.calculate_ball_loc(self.w/2, rad)
+                    self.delta_publisher.publish(balllocmsg)
                 self.get_logger().info(f"Total execution time = {time.time() - start_time}")
         except Exception as ex:
             self.get_logger().error(f"Failed inference step: {ex}")
