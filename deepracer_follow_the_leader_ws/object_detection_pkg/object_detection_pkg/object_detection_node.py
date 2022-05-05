@@ -230,8 +230,8 @@ class ObjectDetectionNode(Node):
         return delta
 
     def circle(self, frame):
-        colorLower = (90,100,0)
-        colorHigher = (140,255,255)
+        colorLower = (70,70,0)
+        colorHigher = (120,255,255)
         blurred = cv2.GaussianBlur(frame, (11, 11), 0)
         hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(hsv, colorLower, colorHigher)
